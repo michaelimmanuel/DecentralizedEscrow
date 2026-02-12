@@ -21,4 +21,8 @@ pub mod escrow {
     pub fn create_escrow(ctx: Context<CreateEscrow>, amount: u64) -> Result<()> {
         instructions::create_escrow::handler(ctx, amount)
     }
+
+    pub fn release_funds(ctx: Context<ReleaseFunds>) -> Result<()> {
+        instructions::release_funds::handler(ctx)
+    }
 }
