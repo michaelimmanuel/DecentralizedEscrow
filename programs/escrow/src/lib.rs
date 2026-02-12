@@ -18,11 +18,7 @@ declare_id!("9X6QbCnVwTg1EjQDNt9KrT7rvJqPRVAUWfYCkNRZW9VY");
 pub mod escrow {
     use super::*;
 
-    pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
-        msg!("Greetings from: {:?}", ctx.program_id);
-        Ok(())
+    pub fn create_escrow(ctx: Context<CreateEscrow>, amount: u64) -> Result<()> {
+        instructions::create_escrow::handler(ctx, amount)
     }
 }
-
-#[derive(Accounts)]
-pub struct Initialize {}
