@@ -11,7 +11,7 @@ use crate::{
 pub struct ReleaseFunds<'info> {
     #[account(
         mut,
-        seeds = [ESCROW_SEED, escrow.buyer.as_ref(), escrow.seller.as_ref()],
+        seeds = [ESCROW_SEED, buyer.key().as_ref(), seller.key().as_ref()],
         bump = escrow.bump,
         has_one = buyer,
         has_one = seller,
@@ -36,30 +36,18 @@ pub fn handler(ctx: Context<ReleaseFunds>) -> Result<()> {
 
     let amount = escrow.amount;
 
-    // Transfer funds from escrow PDA to seller
-    let seeds = &[
-        ESCROW_SEED,
-        escrow.buyer.as_ref(),
-        escrow.seller.as_ref(),
-        &[escrow.bump],
-    ];
-    let signer = &[&seeds[..]];
-
-    let transfer_ix = anchor_lang::solana_program::system_instruction::transfer(
-        &escrow.key(),
-        &seller.key(),
-        amount,
-    );
-
-    anchor_lang::solana_program::program::invoke_signed(
-        &transfer_ix,
-        &[
-            escrow.to_account_info(),
-            seller.to_account_info(),
-            ctx.accounts.system_program.to_account_info(),
-        ],
-        signer,
-    )?;
+    // Transfer funds from escrow PDA to seller by directly manipulating lamports
+    // (we can't use system_instruction::transfer because escrow carries data)
+    **escrow.to_account_info().try_borrow_mut_lamports()? = escrow
+        .to_account_info()
+        .lamports()
+        .checked_sub(amount)
+        .ok_or(EscrowError::InsufficientFunds)?;
+    
+    **seller.to_account_info().try_borrow_mut_lamports()? = seller
+        .lamports()
+        .checked_add(amount)
+        .ok_or(EscrowError::InsufficientFunds)?;
 
     // Update escrow status
     escrow.status = EscrowStatus::Completed;
