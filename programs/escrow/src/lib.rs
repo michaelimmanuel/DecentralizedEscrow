@@ -25,4 +25,8 @@ pub mod escrow {
     pub fn release_funds(ctx: Context<ReleaseFunds>) -> Result<()> {
         instructions::release_funds::handler(ctx)
     }
+
+    pub fn cancel_escrow(ctx: Context<CancelEscrow>) -> Result<()> {
+        instructions::cancel_escrow::handler(ctx)
+    }
 }
