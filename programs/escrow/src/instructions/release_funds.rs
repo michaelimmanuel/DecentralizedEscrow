@@ -37,7 +37,7 @@ pub fn handler(ctx: Context<ReleaseFunds>) -> Result<()> {
     let amount = escrow.amount;
 
     // Transfer funds from escrow PDA to seller by directly manipulating lamports
-    // (we can't use system_instruction::transfer because escrow carries data)
+    
     **escrow.to_account_info().try_borrow_mut_lamports()? = escrow
         .to_account_info()
         .lamports()
