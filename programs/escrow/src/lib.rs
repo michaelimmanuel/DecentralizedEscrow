@@ -29,4 +29,12 @@ pub mod escrow {
     pub fn cancel_escrow(ctx: Context<CancelEscrow>) -> Result<()> {
         instructions::cancel_escrow::handler(ctx)
     }
+
+    pub fn refund_buyer(ctx: Context<RefundBuyer>) -> Result<()> {
+        instructions::refund_buyer::handler(ctx)
+    }
+
+    pub fn raise_dispute(ctx: Context<RaiseDispute>) -> Result<()> {
+        instructions::raise_dispute::handler(ctx)
+    }
 }

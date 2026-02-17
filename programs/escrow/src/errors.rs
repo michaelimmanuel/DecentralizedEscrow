@@ -18,4 +18,6 @@ pub enum EscrowError {
     NotBuyer,
     #[msg("Not the seller of this escrow")]
     NotSeller,
+    #[msg("Arithmetic overflow")]
+    Overflow,
 }
