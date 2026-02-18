@@ -42,6 +42,14 @@ pub struct DisputeRaised {
 }
 
 #[event]
+pub struct DisputeResolved {
+    pub escrow: Pubkey,
+    pub arbiter: Pubkey,
+    pub resolution: String,
+    pub timestamp: i64,
+}
+
+#[event]
 pub struct ReputationUpdated {
     pub user: Pubkey,
     pub successful_trades: u64,

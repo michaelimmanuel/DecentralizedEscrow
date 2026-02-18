@@ -37,4 +37,11 @@ pub mod escrow {
     pub fn raise_dispute(ctx: Context<RaiseDispute>) -> Result<()> {
         instructions::raise_dispute::handler(ctx)
     }
+
+    pub fn resolve_dispute(
+        ctx: Context<ResolveDispute>,
+        resolution: instructions::resolve_dispute::DisputeResolution,
+    ) -> Result<()> {
+        instructions::resolve_dispute::handler(ctx, resolution)
+    }
 }
