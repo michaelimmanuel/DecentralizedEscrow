@@ -117,7 +117,7 @@ describe("raise_dispute", () => {
       assert.fail("Should have thrown an error");
     } catch (error) {
       assert.ok(error.toString().includes("Unauthorized"));
-      console.log("  ✓ Correctly rejected unauthorized dispute");
+      console.log("   Correctly rejected unauthorized dispute");
     }
   });
 
@@ -147,7 +147,7 @@ describe("raise_dispute", () => {
       assert.fail("Should have thrown an error");
     } catch (error) {
       assert.ok(error.toString().includes("InvalidState"));
-      console.log("  ✓ Correctly rejected double dispute");
+      console.log("   Correctly rejected double dispute");
     }
   });
 
@@ -175,7 +175,7 @@ describe("raise_dispute", () => {
       assert.fail("Should have thrown an error");
     } catch (error) {
       assert.ok(error.toString().includes("InvalidState"));
-      console.log("  ✓ Correctly rejected dispute on completed escrow");
+      console.log("   Correctly rejected dispute on completed escrow");
     }
   });
 
@@ -202,7 +202,7 @@ describe("raise_dispute", () => {
       assert.fail("Should have thrown an error");
     } catch (error) {
       assert.ok(error.toString().includes("InvalidState"));
-      console.log("  ✓ Correctly rejected dispute on cancelled escrow");
+      console.log("   Correctly rejected dispute on cancelled escrow");
     }
   });
 
@@ -229,7 +229,7 @@ describe("raise_dispute", () => {
     assert.ok(txDetails !== null, "Transaction should exist");
     assert.ok(txDetails.meta.err === null, "Transaction should succeed");
 
-    console.log("  ✓ DisputeRaised event emitted in transaction");
+    console.log("   DisputeRaised event emitted in transaction");
   });
 
   it("Multiple escrows can have disputes raised independently", async () => {
@@ -306,6 +306,6 @@ describe("raise_dispute", () => {
     assert.deepEqual(escrowBefore.status, { active: {} });
     assert.deepEqual(escrowAfter.status, { disputed: {} });
 
-    console.log("  ✓ All escrow data preserved except status");
+    console.log("   All escrow data preserved except status");
   });
 });

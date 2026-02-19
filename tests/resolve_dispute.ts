@@ -242,7 +242,7 @@ describe("resolve_dispute", () => {
       assert.fail("Should have thrown an error");
     } catch (error) {
       assert.ok(error.toString().includes("InvalidState"));
-      console.log("  ✓ Correctly rejected resolving non-disputed escrow");
+      console.log("   Correctly rejected resolving non-disputed escrow");
     }
   });
 
@@ -270,6 +270,6 @@ describe("resolve_dispute", () => {
     assert.ok(txDetails !== null, "Transaction should exist");
     assert.ok(txDetails.meta.err === null, "Transaction should succeed");
 
-    console.log("  ✓ DisputeResolved event emitted in transaction");
+    console.log("   DisputeResolved event emitted in transaction");
   });
 });
