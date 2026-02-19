@@ -18,6 +18,10 @@ declare_id!("9X6QbCnVwTg1EjQDNt9KrT7rvJqPRVAUWfYCkNRZW9VY");
 pub mod escrow {
     use super::*;
 
+    pub fn initialize_reputation(ctx: Context<InitializeReputation>) -> Result<()> {
+        instructions::initialize::handler(ctx)
+    }
+
     pub fn create_escrow(ctx: Context<CreateEscrow>, amount: u64) -> Result<()> {
         instructions::create_escrow::handler(ctx, amount)
     }
@@ -43,5 +47,12 @@ pub mod escrow {
         resolution: instructions::resolve_dispute::DisputeResolution,
     ) -> Result<()> {
         instructions::resolve_dispute::handler(ctx, resolution)
+    }
+
+    pub fn update_reputation(
+        ctx: Context<UpdateReputation>,
+        update: instructions::update_reputation::ReputationUpdate,
+    ) -> Result<()> {
+        instructions::update_reputation::handler(ctx, update)
     }
 }
