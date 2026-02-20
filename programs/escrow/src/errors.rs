@@ -20,4 +20,6 @@ pub enum EscrowError {
     NotSeller,
     #[msg("Arithmetic overflow")]
     Overflow,
+    #[msg("Arbiter is not authorized or has been deactivated")]
+    UnauthorizedArbiter,
 }

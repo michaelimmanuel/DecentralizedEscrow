@@ -55,4 +55,16 @@ pub mod escrow {
     ) -> Result<()> {
         instructions::update_reputation::handler(ctx, update)
     }
+
+    pub fn initialize_config(ctx: Context<InitializeConfig>, fee_basis_points: u16) -> Result<()> {
+        instructions::initialize_config::handler(ctx, fee_basis_points)
+    }
+
+    pub fn add_arbiter(ctx: Context<AddArbiter>) -> Result<()> {
+        instructions::add_arbiter::handler(ctx)
+    }
+
+    pub fn remove_arbiter(ctx: Context<RemoveArbiter>) -> Result<()> {
+        instructions::remove_arbiter::handler(ctx)
+    }
 }

@@ -3,8 +3,8 @@ use anchor_lang::prelude::*;
 use crate::{
     constants::*,
     errors::EscrowError,
-    events::DisputeResolved,
-    state::{Escrow, EscrowStatus},
+    events::{DisputeResolved, ReputationUpdated},
+    state::{Arbiter, Escrow, EscrowStatus, Reputation},
 };
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Eq)]
@@ -25,8 +25,15 @@ pub struct ResolveDispute<'info> {
     pub escrow: Account<'info, Escrow>,
 
     /// The arbiter who resolves disputes
-    /// TODO: Add proper arbiter authority validation (e.g., from config account)
     pub arbiter: Signer<'info>,
+
+    /// The arbiter's authorization account
+    #[account(
+        seeds = [ARBITER_SEED, arbiter.key().as_ref()],
+        bump = arbiter_account.bump,
+        constraint = arbiter_account.can_resolve_disputes() @ EscrowError::UnauthorizedArbiter,
+    )]
+    pub arbiter_account: Account<'info, Arbiter>,
 
     /// CHECK: Buyer account for refund
     #[account(mut)]
@@ -35,6 +42,22 @@ pub struct ResolveDispute<'info> {
     /// CHECK: Seller account for payment
     #[account(mut)]
     pub seller: AccountInfo<'info>,
+
+    /// Buyer's reputation account (optional)
+    #[account(
+        mut,
+        seeds = [REPUTATION_SEED, buyer.key().as_ref()],
+        bump,
+    )]
+    pub buyer_reputation: Option<Account<'info, Reputation>>,
+
+    /// Seller's reputation account (optional)
+    #[account(
+        mut,
+        seeds = [REPUTATION_SEED, seller.key().as_ref()],
+        bump,
+    )]
+    pub seller_reputation: Option<Account<'info, Reputation>>,
 
     pub system_program: Program<'info, System>,
 }
@@ -113,6 +136,73 @@ pub fn handler(ctx: Context<ResolveDispute>, resolution: DisputeResolution) -> R
 
     // Update escrow status to Completed
     escrow.status = EscrowStatus::Completed;
+
+    // Update reputations based on resolution
+    match resolution {
+        DisputeResolution::FavorBuyer => {
+            // Buyer wins: buyer successful, seller failed
+            if let Some(buyer_reputation) = &mut ctx.accounts.buyer_reputation {
+                buyer_reputation.increment_successful();
+                emit!(ReputationUpdated {
+                    user: buyer_reputation.user,
+                    successful_trades: buyer_reputation.successful_trades,
+                    failed_trades: buyer_reputation.failed_trades,
+                });
+                msg!("Buyer reputation updated: {} successful trades", buyer_reputation.successful_trades);
+            }
+            if let Some(seller_reputation) = &mut ctx.accounts.seller_reputation {
+                seller_reputation.increment_failed();
+                emit!(ReputationUpdated {
+                    user: seller_reputation.user,
+                    successful_trades: seller_reputation.successful_trades,
+                    failed_trades: seller_reputation.failed_trades,
+                });
+                msg!("Seller reputation updated: {} failed trades", seller_reputation.failed_trades);
+            }
+        }
+        DisputeResolution::FavorSeller => {
+            // Seller wins: seller successful, buyer failed
+            if let Some(seller_reputation) = &mut ctx.accounts.seller_reputation {
+                seller_reputation.increment_successful();
+                emit!(ReputationUpdated {
+                    user: seller_reputation.user,
+                    successful_trades: seller_reputation.successful_trades,
+                    failed_trades: seller_reputation.failed_trades,
+                });
+                msg!("Seller reputation updated: {} successful trades", seller_reputation.successful_trades);
+            }
+            if let Some(buyer_reputation) = &mut ctx.accounts.buyer_reputation {
+                buyer_reputation.increment_failed();
+                emit!(ReputationUpdated {
+                    user: buyer_reputation.user,
+                    successful_trades: buyer_reputation.successful_trades,
+                    failed_trades: buyer_reputation.failed_trades,
+                });
+                msg!("Buyer reputation updated: {} failed trades", buyer_reputation.failed_trades);
+            }
+        }
+        DisputeResolution::Split => {
+            // Split resolution: both parties share responsibility (both get failed trade)
+            if let Some(buyer_reputation) = &mut ctx.accounts.buyer_reputation {
+                buyer_reputation.increment_failed();
+                emit!(ReputationUpdated {
+                    user: buyer_reputation.user,
+                    successful_trades: buyer_reputation.successful_trades,
+                    failed_trades: buyer_reputation.failed_trades,
+                });
+                msg!("Buyer reputation updated: {} failed trades", buyer_reputation.failed_trades);
+            }
+            if let Some(seller_reputation) = &mut ctx.accounts.seller_reputation {
+                seller_reputation.increment_failed();
+                emit!(ReputationUpdated {
+                    user: seller_reputation.user,
+                    successful_trades: seller_reputation.successful_trades,
+                    failed_trades: seller_reputation.failed_trades,
+                });
+                msg!("Seller reputation updated: {} failed trades", seller_reputation.failed_trades);
+            }
+        }
+    }
 
     // Emit event
     emit!(DisputeResolved {

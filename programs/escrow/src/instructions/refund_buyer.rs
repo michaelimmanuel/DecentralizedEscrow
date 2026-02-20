@@ -1,9 +1,9 @@
 use anchor_lang::prelude::*;
 use crate::{
-    constants::ESCROW_SEED,
+    constants::{ESCROW_SEED, REPUTATION_SEED},
     errors::EscrowError,
-    events::RefundIssued,
-    state::{Escrow, EscrowStatus},
+    events::{RefundIssued, ReputationUpdated},
+    state::{Escrow, EscrowStatus, Reputation},
 };
 
 #[derive(Accounts)]
@@ -23,6 +23,22 @@ pub struct RefundBuyer<'info> {
     /// CHECK: This is the seller account
     #[account(mut)]
     pub seller: SystemAccount<'info>,
+
+    /// Buyer's reputation account (optional)
+    #[account(
+        mut,
+        seeds = [REPUTATION_SEED, buyer.key().as_ref()],
+        bump,
+    )]
+    pub buyer_reputation: Option<Account<'info, Reputation>>,
+
+    /// Seller's reputation account (optional)
+    #[account(
+        mut,
+        seeds = [REPUTATION_SEED, seller.key().as_ref()],
+        bump,
+    )]
+    pub seller_reputation: Option<Account<'info, Reputation>>,
 
     pub system_program: Program<'info, System>,
 }
@@ -64,8 +80,27 @@ pub fn handler(ctx: Context<RefundBuyer>) -> Result<()> {
     // Update escrow status to Cancelled
     escrow.status = EscrowStatus::Cancelled;
 
-    // TODO: Update reputations - this will be handled by a separate instruction
-    // or when the initialize_reputation instruction is implemented
+    // Update reputation for buyer if account exists (failed trade)
+    if let Some(buyer_reputation) = &mut ctx.accounts.buyer_reputation {
+        buyer_reputation.increment_failed();
+        emit!(ReputationUpdated {
+            user: buyer_reputation.user,
+            successful_trades: buyer_reputation.successful_trades,
+            failed_trades: buyer_reputation.failed_trades,
+        });
+        msg!("Buyer reputation updated: {} failed trades", buyer_reputation.failed_trades);
+    }
+
+    // Update reputation for seller if account exists (failed trade)
+    if let Some(seller_reputation) = &mut ctx.accounts.seller_reputation {
+        seller_reputation.increment_failed();
+        emit!(ReputationUpdated {
+            user: seller_reputation.user,
+            successful_trades: seller_reputation.successful_trades,
+            failed_trades: seller_reputation.failed_trades,
+        });
+        msg!("Seller reputation updated: {} failed trades", seller_reputation.failed_trades);
+    }
 
     // Emit RefundIssued event
     emit!(RefundIssued {

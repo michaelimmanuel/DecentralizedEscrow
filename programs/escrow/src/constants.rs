@@ -6,6 +6,12 @@ pub const ESCROW_SEED: &[u8] = b"escrow";
 #[constant]
 pub const REPUTATION_SEED: &[u8] = b"reputation";
 
+#[constant]
+pub const CONFIG_SEED: &[u8] = b"config";
+
+#[constant]
+pub const ARBITER_SEED: &[u8] = b"arbiter";
+
 // Minimum escrow amount in lamports (0.01 SOL)
 pub const MIN_ESCROW_AMOUNT: u64 = 10_000_000;
 
