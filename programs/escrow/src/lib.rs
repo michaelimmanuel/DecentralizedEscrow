@@ -67,4 +67,8 @@ pub mod escrow {
     pub fn remove_arbiter(ctx: Context<RemoveArbiter>) -> Result<()> {
         instructions::remove_arbiter::handler(ctx)
     }
+
+    pub fn withdraw_fees(ctx: Context<WithdrawFees>, amount: u64) -> Result<()> {
+        instructions::withdraw_fees::handler(ctx, amount)
+    }
 }

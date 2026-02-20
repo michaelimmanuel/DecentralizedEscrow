@@ -4,7 +4,7 @@ use crate::{
     constants::*,
     errors::EscrowError,
     events::{FundsReleased, ReputationUpdated},
-    state::{Escrow, EscrowStatus, Reputation},
+    state::{Config, Escrow, EscrowStatus, Reputation},
 };
 
 #[derive(Accounts)]
@@ -42,6 +42,15 @@ pub struct ReleaseFunds<'info> {
     )]
     pub seller_reputation: Option<Account<'info, Reputation>>,
 
+    /// Config account for fee settings (optional - no constraints to allow truly optional)
+    #[account(mut)]
+    pub config: Option<Account<'info, Config>>,
+
+    /// Fee collector account (optional, receives platform fees)
+    /// CHECK: Fee collector receives platform fees, validated manually in handler
+    #[account(mut)]
+    pub fee_collector: Option<AccountInfo<'info>>,
+
     pub system_program: Program<'info, System>,
 }
 
@@ -51,18 +60,60 @@ pub fn handler(ctx: Context<ReleaseFunds>) -> Result<()> {
     let clock = Clock::get()?;
 
     let amount = escrow.amount;
+    let mut fee_amount = 0u64;
+    let mut seller_amount = amount;
 
-    // Transfer funds from escrow PDA to seller by directly manipulating lamports
-    
+    // Calculate and deduct platform fee if config is provided
+    if let Some(config) = &ctx.accounts.config {
+        if let Some(fee_collector) = &ctx.accounts.fee_collector {
+            // Validate config PDA
+            let (expected_config_key, _) = Pubkey::find_program_address(
+                &[CONFIG_SEED],
+                &crate::ID,
+            );
+            require!(
+                config.key() == expected_config_key,
+                EscrowError::InvalidState
+            );
+
+            // Ensure fee_collector matches config
+            require!(
+                fee_collector.key() == config.fee_collector,
+                EscrowError::InvalidFeeCollector
+            );
+
+            // Calculate fee (basis points: 100 = 1%)
+            fee_amount = amount
+                .checked_mul(config.fee_basis_points as u64)
+                .ok_or(EscrowError::InsufficientFunds)?
+                .checked_div(10_000)
+                .ok_or(EscrowError::InsufficientFunds)?;
+            
+            seller_amount = amount
+                .checked_sub(fee_amount)
+                .ok_or(EscrowError::InsufficientFunds)?;
+
+            // Transfer fee to fee collector
+            **escrow.to_account_info().try_borrow_mut_lamports()? -= fee_amount;
+            **fee_collector.try_borrow_mut_lamports()? += fee_amount;
+
+            msg!("Platform fee deducted: {} lamports ({}%)", 
+                fee_amount, 
+                config.fee_basis_points as f64 / 100.0
+            );
+        }
+    }
+
+    // Transfer remaining funds from escrow PDA to seller
     **escrow.to_account_info().try_borrow_mut_lamports()? = escrow
         .to_account_info()
         .lamports()
-        .checked_sub(amount)
+        .checked_sub(seller_amount)
         .ok_or(EscrowError::InsufficientFunds)?;
     
     **seller.to_account_info().try_borrow_mut_lamports()? = seller
         .lamports()
-        .checked_add(amount)
+        .checked_add(seller_amount)
         .ok_or(EscrowError::InsufficientFunds)?;
 
     // Update escrow status
@@ -94,11 +145,12 @@ pub fn handler(ctx: Context<ReleaseFunds>) -> Result<()> {
     emit!(FundsReleased {
         escrow: escrow.key(),
         seller: seller.key(),
-        amount,
+        amount: seller_amount,
+        fee_amount,
         timestamp: clock.unix_timestamp,
     });
 
-    msg!("Funds released: {} lamports to {}", amount, seller.key());
+    msg!("Funds released: {} lamports to seller, {} lamports platform fee", seller_amount, fee_amount);
 
     Ok(())
 }

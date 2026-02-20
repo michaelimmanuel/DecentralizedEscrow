@@ -9,6 +9,7 @@ pub mod update_reputation;
 pub mod initialize_config;
 pub mod add_arbiter;
 pub mod remove_arbiter;
+pub mod withdraw_fees;
 
 pub use create_escrow::*;
 pub use release_funds::*;
@@ -21,3 +22,4 @@ pub use update_reputation::*;
 pub use initialize_config::*;
 pub use add_arbiter::*;
 pub use remove_arbiter::*;
+pub use withdraw_fees::*;

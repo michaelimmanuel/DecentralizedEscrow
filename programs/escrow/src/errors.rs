@@ -22,4 +22,6 @@ pub enum EscrowError {
     Overflow,
     #[msg("Arbiter is not authorized or has been deactivated")]
     UnauthorizedArbiter,
+    #[msg("Invalid fee collector account")]
+    InvalidFeeCollector,
 }

@@ -51,4 +51,8 @@ pub fn handler(ctx: Context<InitializeConfig>, fee_basis_points: u16) -> Result<
 pub enum ConfigError {
     #[msg("Fee cannot exceed 10% (1000 basis points)")]
     FeeTooHigh,
+    #[msg("Unauthorized action")]
+    Unauthorized,
+    #[msg("Insufficient funds")]
+    InsufficientFunds,
 }
