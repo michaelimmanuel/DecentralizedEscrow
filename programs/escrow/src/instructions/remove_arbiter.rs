@@ -17,10 +17,14 @@ pub struct RemoveArbiter<'info> {
 
     #[account(
         mut,
-        seeds = [ARBITER_SEED, arbiter_account.arbiter.as_ref()],
+        seeds = [ARBITER_SEED, arbiter.key().as_ref()],
         bump = arbiter_account.bump,
     )]
     pub arbiter_account: Account<'info, Arbiter>,
+
+    /// The arbiter being removed
+    /// CHECK: Used for PDA derivation
+    pub arbiter: AccountInfo<'info>,
 
     #[account(mut)]
     pub admin: Signer<'info>,

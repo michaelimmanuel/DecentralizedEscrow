@@ -130,7 +130,6 @@ describe("arbiter_management", () => {
     const tx = await program.methods
       .addArbiter()
       .accounts({
-        config: configPda,
         arbiter: arbiter1.publicKey,
         admin: admin.publicKey,
       })
@@ -157,7 +156,6 @@ describe("arbiter_management", () => {
     await program.methods
       .addArbiter()
       .accounts({
-        config: configPda,
         arbiter: arbiter2.publicKey,
         admin: admin.publicKey,
       })
@@ -185,7 +183,6 @@ describe("arbiter_management", () => {
       await program.methods
         .addArbiter()
         .accounts({
-          config: configPda,
           arbiter: newArbiter.publicKey,
           admin: unauthorized.publicKey,
         })
@@ -207,8 +204,7 @@ describe("arbiter_management", () => {
     const tx = await program.methods
       .removeArbiter()
       .accounts({
-        config: configPda,
-        arbiterAccount: arbiter2Pda,
+        arbiter: arbiter2.publicKey,
         admin: admin.publicKey,
       })
       .signers([admin])
@@ -235,8 +231,7 @@ describe("arbiter_management", () => {
       await program.methods
         .removeArbiter()
         .accounts({
-          config: configPda,
-          arbiterAccount: arbiter1Pda,
+          arbiter: arbiter1.publicKey,
           admin: unauthorized.publicKey,
         })
         .signers([unauthorized])
@@ -302,7 +297,6 @@ describe("arbiter_management", () => {
       .resolveDispute({ favorSeller: {} })
       .accounts({
         arbiter: arbiter1.publicKey,
-        arbiterAccount: arbiter1Pda,
         buyer: buyer.publicKey,
         seller: seller.publicKey,
       })
@@ -363,7 +357,6 @@ describe("arbiter_management", () => {
         .resolveDispute({ favorBuyer: {} })
         .accounts({
           arbiter: arbiter2.publicKey,
-          arbiterAccount: arbiter2Pda,
           buyer: buyer.publicKey,
           seller: seller.publicKey,
         })
@@ -434,7 +427,6 @@ describe("arbiter_management", () => {
         .resolveDispute({ split: {} })
         .accounts({
           arbiter: fakeArbiter.publicKey,
-          arbiterAccount: fakeArbiterPda,
           buyer: buyer.publicKey,
           seller: seller.publicKey,
         })
