@@ -38,7 +38,7 @@ describe("Full Integration Test", () => {
   const ESCROW_AMOUNT_2 = 3 * LAMPORTS_PER_SOL;
 
   before(async () => {
-    console.log("\n🚀 Setting up full integration test environment...\n");
+    console.log("\nSetting up full integration test environment...\n");
 
     // Create test accounts
     admin = anchor.web3.Keypair.generate();
@@ -106,7 +106,7 @@ describe("Full Integration Test", () => {
       program.programId
     );
 
-    console.log("✅ All test accounts funded and PDAs derived");
+    console.log("All test accounts funded and PDAs derived");
     console.log(`   Admin: ${admin.publicKey.toString()}`);
     console.log(`   Arbiter: ${arbiter.publicKey.toString()}`);
     console.log(`   Buyer 1: ${buyer.publicKey.toString()}`);
@@ -118,7 +118,7 @@ describe("Full Integration Test", () => {
   });
 
   it("Step 1: Initialize platform configuration", async () => {
-    console.log("📋 Initializing platform configuration...");
+    console.log("Initializing platform configuration...");
 
     await program.methods
       .initializeConfig(FEE_BASIS_POINTS)
@@ -134,11 +134,11 @@ describe("Full Integration Test", () => {
     assert.ok(config.admin.equals(admin.publicKey));
     assert.equal(config.feeBasisPoints, FEE_BASIS_POINTS);
 
-    console.log(`✅ Config initialized with ${FEE_BASIS_POINTS / 100}% platform fee\n`);
+    console.log(`Config initialized with ${FEE_BASIS_POINTS / 100}% platform fee\n`);
   });
 
   it("Step 2: Add arbiter to the platform", async () => {
-    console.log("👨‍⚖️ Adding arbiter to the platform...");
+    console.log("Adding arbiter to the platform...");
 
     await program.methods
       .addArbiter()
@@ -155,11 +155,11 @@ describe("Full Integration Test", () => {
     assert.ok(arbiterAccount.arbiter.equals(arbiter.publicKey));
     assert.ok(arbiterAccount.isActive);
 
-    console.log("✅ Arbiter added and activated\n");
+    console.log("Arbiter added and activated\n");
   });
 
   it("Step 3: Initialize reputation accounts", async () => {
-    console.log("⭐ Initializing reputation accounts...");
+    console.log("Initializing reputation accounts...");
 
     // Initialize buyer reputation
     await program.methods
@@ -213,11 +213,11 @@ describe("Full Integration Test", () => {
     assert.equal(sellerRep.successfulTrades.toNumber(), 0);
     assert.equal(sellerRep.failedTrades.toNumber(), 0);
 
-    console.log("✅ All reputation accounts initialized\n");
+    console.log("All reputation accounts initialized\n");
   });
 
   it("Step 4: Create first escrow (Buyer 1 → Seller 1)", async () => {
-    console.log(`💰 Creating escrow for ${ESCROW_AMOUNT / LAMPORTS_PER_SOL} SOL...`);
+    console.log(`Creating escrow for ${ESCROW_AMOUNT / LAMPORTS_PER_SOL} SOL...`);
 
     const initialBuyerBalance = await provider.connection.getBalance(buyer.publicKey);
 
@@ -240,11 +240,11 @@ describe("Full Integration Test", () => {
     assert.deepEqual(escrow.status, { active: {} });
     assert.isTrue(initialBuyerBalance - finalBuyerBalance >= ESCROW_AMOUNT);
 
-    console.log("✅ Escrow 1 created successfully\n");
+    console.log("Escrow 1 created successfully\n");
   });
 
   it("Step 5: Create second escrow (Buyer 2 → Seller 2)", async () => {
-    console.log(`💰 Creating second escrow for ${ESCROW_AMOUNT_2 / LAMPORTS_PER_SOL} SOL...`);
+    console.log(`Creating second escrow for ${ESCROW_AMOUNT_2 / LAMPORTS_PER_SOL} SOL...`);
 
     await program.methods
       .createEscrow(new anchor.BN(ESCROW_AMOUNT_2))
@@ -262,11 +262,11 @@ describe("Full Integration Test", () => {
     assert.ok(escrow2.seller.equals(seller2.publicKey));
     assert.equal(escrow2.amount.toNumber(), ESCROW_AMOUNT_2);
 
-    console.log("✅ Escrow 2 created successfully\n");
+    console.log("Escrow 2 created successfully\n");
   });
 
   it("Step 6: Release funds from first escrow (with platform fee)", async () => {
-    console.log("🎉 Buyer 1 releasing funds to Seller 1...");
+    console.log("Buyer 1 releasing funds to Seller 1...");
 
     const initialSellerBalance = await provider.connection.getBalance(seller.publicKey);
     const initialFeeCollectorBalance = await provider.connection.getBalance(feeCollectorPda);
@@ -304,13 +304,13 @@ describe("Full Integration Test", () => {
     assert.equal(buyerRep.successfulTrades.toNumber(), 1);
     assert.equal(sellerRep.successfulTrades.toNumber(), 1);
 
-    console.log(`✅ Funds released: Seller received ${expectedSellerAmount / LAMPORTS_PER_SOL} SOL`);
+    console.log(`Funds released: Seller received ${expectedSellerAmount / LAMPORTS_PER_SOL} SOL`);
     console.log(`   Platform fee collected: ${expectedFee / LAMPORTS_PER_SOL} SOL`);
     console.log(`   Buyer successful trades: ${buyerRep.successfulTrades}, Seller successful trades: ${sellerRep.successfulTrades}\n`);
   });
 
   it("Step 7: Raise dispute on second escrow", async () => {
-    console.log("⚠️ Buyer 2 raising a dispute...");
+    console.log("Buyer 2 raising a dispute...");
 
     await program.methods
       .raiseDispute()
@@ -327,11 +327,11 @@ describe("Full Integration Test", () => {
 
     assert.deepEqual(escrow2.status, { disputed: {} });
 
-    console.log("✅ Dispute raised on Escrow 2\n");
+    console.log("Dispute raised on Escrow 2\n");
   });
 
   it("Step 8: Arbiter resolves dispute in favor of buyer", async () => {
-    console.log("👨‍⚖️ Arbiter resolving dispute...");
+    console.log("Arbiter resolving dispute...");
 
     const initialBuyer2Balance = await provider.connection.getBalance(buyer2.publicKey);
 
@@ -363,12 +363,12 @@ describe("Full Integration Test", () => {
     assert.equal(buyer2Rep.successfulTrades.toNumber(), 1);
     assert.equal(seller2Rep.failedTrades.toNumber(), 1);
 
-    console.log(`✅ Dispute resolved: Buyer 2 refunded ${ESCROW_AMOUNT_2 / LAMPORTS_PER_SOL} SOL`);
+    console.log(`Dispute resolved: Buyer 2 refunded ${ESCROW_AMOUNT_2 / LAMPORTS_PER_SOL} SOL`);
     console.log(`   Buyer 2 successful trades: ${buyer2Rep.successfulTrades}, Seller 2 failed trades: ${seller2Rep.failedTrades}\n`);
   });
 
   it("Step 9: Admin withdraws accumulated platform fees", async () => {
-    console.log("💸 Admin withdrawing platform fees...");
+    console.log("Admin withdrawing platform fees...");
 
     const feeCollectorBalance = await provider.connection.getBalance(feeCollectorPda);
     const initialAdminBalance = await provider.connection.getBalance(admin.publicKey);
@@ -396,12 +396,12 @@ describe("Full Integration Test", () => {
     assert.equal(finalFeeCollectorBalance, rentExemption);
     assert.isTrue(finalAdminBalance > initialAdminBalance);
 
-    console.log(`✅ Admin withdrew ${withdrawAmount / LAMPORTS_PER_SOL} SOL in fees`);
+    console.log(`Admin withdrew ${withdrawAmount / LAMPORTS_PER_SOL} SOL in fees`);
     console.log(`   Fee collector balance (rent-exempt): ${finalFeeCollectorBalance / LAMPORTS_PER_SOL} SOL\n`);
   });
 
   it("Step 10: Verify reputation updates", async () => {
-    console.log("📊 Verifying reputation states...");
+    console.log("Verifying reputation states...");
 
     const buyerRep = await program.account.reputation.fetch(buyerReputationPda);
     const seller2Rep = await program.account.reputation.fetch(seller2ReputationPda);
@@ -414,11 +414,11 @@ describe("Full Integration Test", () => {
     assert.equal(seller2Rep.successfulTrades.toNumber(), 0);
     assert.equal(seller2Rep.failedTrades.toNumber(), 1);
 
-    console.log(`✅ Reputation verified: Buyer 1 = ${buyerRep.successfulTrades} successful, Seller 2 = ${seller2Rep.failedTrades} failed\n`);
+    console.log(`Reputation verified: Buyer 1 = ${buyerRep.successfulTrades} successful, Seller 2 = ${seller2Rep.failedTrades} failed\n`);
   });
 
   it("Step 11: Remove arbiter from platform", async () => {
-    console.log("🚫 Admin removing arbiter...");
+    console.log("Admin removing arbiter...");
 
     await program.methods
       .removeArbiter()
@@ -434,11 +434,11 @@ describe("Full Integration Test", () => {
 
     assert.isFalse(arbiterAccount.isActive);
 
-    console.log("✅ Arbiter deactivated\n");
+    console.log("Arbiter deactivated\n");
   });
 
   it("Step 12: Verify final system state", async () => {
-    console.log("🔍 Verifying final system state...");
+    console.log("Verifying final system state...");
 
     // Check config
     const config = await program.account.config.fetch(configPda);
@@ -457,13 +457,13 @@ describe("Full Integration Test", () => {
     const buyer2Rep = await program.account.reputation.fetch(buyer2ReputationPda);
     const seller2Rep = await program.account.reputation.fetch(seller2ReputationPda);
 
-    console.log("\n📈 Final Reputation Stats:");
+    console.log("\nFinal Reputation Stats:");
     console.log(`   Buyer 1: ${buyerRep.successfulTrades} successful, ${buyerRep.failedTrades} failed`);
     console.log(`   Seller 1: ${sellerRep.successfulTrades} successful, ${sellerRep.failedTrades} failed`);
     console.log(`   Buyer 2: ${buyer2Rep.successfulTrades} successful, ${buyer2Rep.failedTrades} failed`);
     console.log(`   Seller 2: ${seller2Rep.successfulTrades} successful, ${seller2Rep.failedTrades} failed`);
 
-    console.log("\n✅ All system components verified successfully");
-    console.log("\n🎉 FULL INTEGRATION TEST COMPLETED! 🎉\n");
+    console.log("\nAll system components verified successfully");
+    console.log("\nFULL INTEGRATION TEST COMPLETED!\n");
   });
 });
