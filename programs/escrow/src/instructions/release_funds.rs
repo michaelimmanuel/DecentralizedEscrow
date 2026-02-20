@@ -76,9 +76,13 @@ pub fn handler(ctx: Context<ReleaseFunds>) -> Result<()> {
                 EscrowError::InvalidState
             );
 
-            // Ensure fee_collector matches config
+            // Validate fee_collector PDA
+            let (expected_fee_collector, _) = Pubkey::find_program_address(
+                &[FEE_COLLECTOR_SEED],
+                &crate::ID,
+            );
             require!(
-                fee_collector.key() == config.fee_collector,
+                fee_collector.key() == expected_fee_collector,
                 EscrowError::InvalidFeeCollector
             );
 

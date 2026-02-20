@@ -4,16 +4,16 @@ use anchor_lang::prelude::*;
 pub struct Config {
     pub admin: Pubkey,
     pub fee_basis_points: u16,  // Fee in basis points (e.g., 100 = 1%)
-    pub fee_collector: Pubkey,
     pub bump: u8,
+    pub fee_collector_bump: u8,
 }
 
 impl Config {
     pub const LEN: usize = 8  // discriminator
         + 32  // admin
         + 2   // fee_basis_points
-        + 32  // fee_collector
-        + 1;  // bump
+        + 1   // bump
+        + 1;  // fee_collector_bump
 
     pub fn is_admin(&self, key: &Pubkey) -> bool {
         self.admin == *key

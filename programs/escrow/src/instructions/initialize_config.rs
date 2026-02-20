@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 
 use crate::{
-    constants::CONFIG_SEED,
+    constants::*,
     state::Config,
 };
 
@@ -16,12 +16,16 @@ pub struct InitializeConfig<'info> {
     )]
     pub config: Account<'info, Config>,
 
+    /// Fee collector PDA that will hold accumulated fees
+    /// CHECK: PDA will be validated by seeds constraint
+    #[account(
+        seeds = [FEE_COLLECTOR_SEED],
+        bump
+    )]
+    pub fee_collector: AccountInfo<'info>,
+
     #[account(mut)]
     pub admin: Signer<'info>,
-
-    /// The fee collector wallet (can be same as admin or different)
-    /// CHECK: This is just a wallet address
-    pub fee_collector: AccountInfo<'info>,
 
     pub system_program: Program<'info, System>,
 }
@@ -37,12 +41,12 @@ pub fn handler(ctx: Context<InitializeConfig>, fee_basis_points: u16) -> Result<
     // Initialize config
     config.admin = admin.key();
     config.fee_basis_points = fee_basis_points;
-    config.fee_collector = fee_collector.key();
     config.bump = ctx.bumps.config;
+    config.fee_collector_bump = ctx.bumps.fee_collector;
 
     msg!("Config initialized with admin: {}", config.admin);
     msg!("Fee: {} basis points ({}%)", fee_basis_points, fee_basis_points as f64 / 100.0);
-    msg!("Fee collector: {}", config.fee_collector);
+    msg!("Fee collector PDA: {}", fee_collector.key());
 
     Ok(())
 }

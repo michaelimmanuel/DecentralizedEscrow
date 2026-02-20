@@ -12,6 +12,9 @@ pub const CONFIG_SEED: &[u8] = b"config";
 #[constant]
 pub const ARBITER_SEED: &[u8] = b"arbiter";
 
+#[constant]
+pub const FEE_COLLECTOR_SEED: &[u8] = b"fee_collector";
+
 // Minimum escrow amount in lamports (0.01 SOL)
 pub const MIN_ESCROW_AMOUNT: u64 = 10_000_000;
 
